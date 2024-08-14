@@ -1,7 +1,7 @@
-setuptools==41.0.1
-ftfy==5.6
-tqdm==4.32.1
-Click==7.0
-sentencepiece==0.1.83
+click==8.1.7
+ftfy==6.2.3
+numpy==1.23.5
+sentencepiece==0.2.0
+setuptools==57.4.0
 tensorflow==2.9.3
-numpy==1.22.0
+tqdm==4.66.5
