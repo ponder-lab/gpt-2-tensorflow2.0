@@ -24,6 +24,7 @@ def top_k_logits(logits, k):
 	# Nucleas Sampling (https://arxiv.org/pdf/1904.09751.pdf)
 
 
+@tf.function
 def top_p_logits(logits, p):
 	"""Took from OpenAI GPT-2 Implememtation"""
 	batch = tf.shape(logits)[0]

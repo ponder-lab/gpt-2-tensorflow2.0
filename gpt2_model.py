@@ -7,6 +7,7 @@ from layers.embedding_layer import *
 from layers.feed_forward import *
 from layers.layer_norm import LayerNormalization
 from utils.tf_utils import *
+from tensorflow import function
 
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 LOG_DIR = _ROOT + "/log"
@@ -66,6 +67,7 @@ class Gpt2(tf.keras.Model):
 		self.train_step_signature = [
 			tf.TensorSpec(shape=(None, None), dtype=tf.int32)]
 
+	@function
 	def call(self, x, training=True, past=None):
 		x = tf.cast(x, tf.int32)
 		# self.batch_size, self.sequence = tf.shape(x)[0], tf.shape(x)[1]
@@ -124,6 +126,7 @@ class Gpt2(tf.keras.Model):
 				self.optimizer = tf.keras.optimizers.SGD(self.learning_rate)
 			return self.optimizer
 
+	@function
 	def get_loss(self, real, pred):
 		with tf.name_scope("loss_layer"):
 			mask = tf.math.logical_not(tf.math.equal(real, 0))
@@ -168,6 +171,7 @@ class Gpt2(tf.keras.Model):
 
 			return self.train_writer, self.test_writer
 
+	@function
 	def _train_step(self, inputs, targets):
 		with tf.GradientTape() as tape:
 			predictions, _ = self(inputs, training=True)
@@ -185,6 +189,7 @@ class Gpt2(tf.keras.Model):
 
 		return step, loss, perplexity
 
+	@function
 	def _test_step(self, inputs, targets):
 		pred, _ = self(inputs, training=False)
 		loss = self.get_loss(targets, pred)
@@ -199,6 +204,7 @@ class Gpt2(tf.keras.Model):
 	def test_step(self, inputs, targets):
 		return self._test_step(inputs, targets)
 
+	@function
 	def _distributed_train_step(self, inputs, targets):
 
 		def step_fn(inp, tar):
@@ -227,6 +233,7 @@ class Gpt2(tf.keras.Model):
 
 		return step, mean_loss, perplexity
 
+	@function
 	def _distributed_test_step(self, inputs, targets):
 		def step_fn(inp, tar):
 			logits, _ = self(inp, training=False)
