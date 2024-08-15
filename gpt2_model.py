@@ -70,7 +70,7 @@ class Gpt2(tf.keras.Model):
 			name='accuracy')
 
 		self.train_step_signature = [
-			tf.TensorSpec(shape=(None, None), dtype=tf.int32)]
+			tf.TensorSpec(shape=(None, None), dtype=tf.int32)]		
 
 	def call(self, x, training=True, past=None):
 		x = tf.cast(x, tf.int32)
