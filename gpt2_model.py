@@ -307,11 +307,11 @@ class Gpt2(tf.keras.Model):
 			tf.summary.trace_on(graph=True, profiler=False)
 			count = 0
 			for (_, (inputs, targets)) in enumerate(train_dataset):
-				count += 1
-
 				# shorten the training.
 				if count > 100:
 					break
+
+				count += 1
 
 				step, loss, perplexity = train_func(inputs, targets)
 
