@@ -22,6 +22,9 @@ train_step_signature = [
 
 
 class Gpt2(tf.keras.Model):
+	start_time = timeit.default_timer()
+	skipped_time = 0
+
 	def __init__(self, num_layers,
 	             d_model,
 	             num_heads,
@@ -34,9 +37,6 @@ class Gpt2(tf.keras.Model):
 	             grad_clip=False,
 	             clip_value=1.0):
 		super(Gpt2, self).__init__()
-
-		self._start_time = timeit.default_timer()
-		self._skipped_time = 0
 
 		self.rev_embedding_projection = rev_embedding_projection
 		self.num_layers = num_layers
@@ -71,7 +71,7 @@ class Gpt2(tf.keras.Model):
 			name='accuracy')
 
 		self.train_step_signature = [
-			tf.TensorSpec(shape=(None, None), dtype=tf.int32)]		
+			tf.TensorSpec(shape=(None, None), dtype=tf.int32)]
 
 	@function
 	def call(self, x, training=True, past=None):
@@ -159,11 +159,11 @@ class Gpt2(tf.keras.Model):
 				ckpt.restore(self.ckpt_manager.latest_checkpoint)
 				print_time = timeit.default_timer()
 				print('Latest checkpoint restored...............')
-				self._skipped_time += timeit.default_timer() - print_time
+				Gpt2.skipped_time += timeit.default_timer() - print_time
 			else:
 				print_time = timeit.default_timer()
 				print("Initializing model from scratch..........")
-				self._skipped_time += timeit.default_timer() - print_time
+				Gpt2.skipped_time += timeit.default_timer() - print_time
 
 	def load_model(self, filepath):
 		ckpt = tf.train.Checkpoint(model=self)
@@ -272,13 +272,13 @@ class Gpt2(tf.keras.Model):
 		if graph_mode:
 			print_time = timeit.default_timer()
 			print("Running in graph mode.............")
-			self._skipped_time += timeit.default_timer() - print_time
+			Gpt2.skipped_time += timeit.default_timer() - print_time
 			train_fuc = self.train_step
 			test_fuc = self.test_step
 		else:
 			print_time = timeit.default_timer()
 			print("Running in eager mode.............")
-			self._skipped_time += timeit.default_timer() - print_time
+			Gpt2.skipped_time += timeit.default_timer() - print_time
 			train_fuc = self._train_step
 			test_fuc = self._test_step
 		return train_fuc, test_fuc
@@ -314,7 +314,7 @@ class Gpt2(tf.keras.Model):
 					break
 
 				step, loss, perplexity = train_func(inputs, targets)
-				
+
 				total_loss += loss
 				loss_count += 1
 
@@ -358,9 +358,9 @@ class Gpt2(tf.keras.Model):
 					print_time = timeit.default_timer()
 					print('Saving checkpoint for step {} at {}'.format(step.numpy(),
 					                                                   ckpt_save_path))
-					self._skipped_time += timeit.default_timer() - print_time
+					Gpt2.skipped_time += timeit.default_timer() - print_time
 
-			time = timeit.default_timer() - self._start_time - self._skipped_time
+			time = timeit.default_timer() - Gpt2.start_time - Gpt2.skipped_time
 			avg_loss = float(total_loss) / float(loss_count)
 			avg_accuracy = float(total_perplexity)/ float(perplexity_count)
 
@@ -418,7 +418,7 @@ class Gpt2(tf.keras.Model):
 		with tf_writer.as_default():
 			tf.summary.scalar("loss", loss, step=step)
 			tf.summary.scalar("perplexity", perplexity, step=step)
-		self._skipped_time += timeit.default_timer() - print_time
+		Gpt2.skipped_time += timeit.default_timer() - print_time
 
 
 class OutputLayer(tf.keras.layers.Layer):
