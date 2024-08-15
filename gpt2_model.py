@@ -278,8 +278,16 @@ class Gpt2(tf.keras.Model):
 			train_dataset, test_dataset = train_dataset
 			train_func, test_func = self.get_train_test_function(graph_mode)
 			tf.summary.trace_on(graph=True, profiler=False)
+			count = 0
 			for (_, (inputs, targets)) in enumerate(train_dataset):
+				count += 1
+
+				# shorten the training.
+				if count > 100:
+					return
+
 				step, loss, perplexity = train_func(inputs, targets)
+
 				if step % 100 == 0:
 					self.log_summary(self.train_writer,
 					                 step.numpy(),
