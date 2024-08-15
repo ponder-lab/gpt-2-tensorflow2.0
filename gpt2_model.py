@@ -284,7 +284,7 @@ class Gpt2(tf.keras.Model):
 
 				# shorten the training.
 				if count > 100:
-					return
+					break
 
 				step, loss, perplexity = train_func(inputs, targets)
 
