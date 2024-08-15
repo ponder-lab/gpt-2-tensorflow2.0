@@ -309,7 +309,7 @@ class Gpt2(tf.keras.Model):
 			count = 0
 			for (_, (inputs, targets)) in enumerate(train_dataset):
 				# shorten the training.
-				if count > 100:
+				if count => 100:
 					break
 
 				count += 1
