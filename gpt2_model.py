@@ -182,6 +182,7 @@ class Gpt2(tf.keras.Model):
 		with tf.GradientTape() as tape:
 			predictions, _ = self(inputs, training=True)
 			loss = tf.reduce_mean(self.get_loss(targets, predictions))
+			accuracy = self.get_padded_accuracy(targets, predictions)
 
 		with tf.name_scope("gradients"):
 			gradients = tape.gradient(loss, self.trainable_variables)
@@ -193,7 +194,7 @@ class Gpt2(tf.keras.Model):
 		perplexity = self.get_perplexity(loss)
 		step = self.optimizer.iterations
 
-		return step, loss, perplexity
+		return step, loss, perplexity, accuracy
 
 	def _test_step(self, inputs, targets):
 		pred, _ = self(inputs, training=False)
@@ -306,7 +307,7 @@ class Gpt2(tf.keras.Model):
 
 				count += 1
 
-				step, loss, perplexity = train_func(inputs, targets)
+				step, loss, perplexity, accuracy = train_func(inputs, targets)
 
 				total_loss += loss
 				loss_count += 1
