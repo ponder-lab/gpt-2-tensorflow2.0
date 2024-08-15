@@ -186,6 +186,7 @@ class Gpt2(tf.keras.Model):
 		with tf.GradientTape() as tape:
 			predictions, _ = self(inputs, training=True)
 			loss = tf.reduce_mean(self.get_loss(targets, predictions))
+			accuracy = self.get_padded_accuracy(targets, predictions)
 
 		with tf.name_scope("gradients"):
 			gradients = tape.gradient(loss, self.trainable_variables)
@@ -197,7 +198,7 @@ class Gpt2(tf.keras.Model):
 		perplexity = self.get_perplexity(loss)
 		step = self.optimizer.iterations
 
-		return step, loss, perplexity
+		return step, loss, perplexity, accuracy
 
 	@function
 	def _test_step(self, inputs, targets):
@@ -298,8 +299,8 @@ class Gpt2(tf.keras.Model):
 		total_loss = 0
 		loss_count = 0
 
-		total_perplexity = 0
-		perplexity_count = 0
+		total_accuracy = 0
+		accuracy_count = 0
 
 		if self.mirrored_strategy is None:
 			train_dataset, test_dataset = train_dataset
@@ -313,13 +314,13 @@ class Gpt2(tf.keras.Model):
 
 				count += 1
 
-				step, loss, perplexity = train_func(inputs, targets)
+				step, loss, perplexity, accuracy = train_func(inputs, targets)
 
 				total_loss += loss
 				loss_count += 1
 
-				total_perplexity += perplexity
-				perplexity_count += 1
+				total_accuracy += accuracy
+				accuracy_count += 1
 
 				if step % 100 == 0:
 					self.log_summary(self.train_writer,
@@ -362,7 +363,7 @@ class Gpt2(tf.keras.Model):
 
 			time = timeit.default_timer() - Gpt2.start_time - Gpt2.skipped_time
 			avg_loss = float(total_loss) / float(loss_count)
-			avg_accuracy = float(total_perplexity)/ float(perplexity_count)
+			avg_accuracy = float(total_accuracy)/ float(accuracy_count)
 
 			write_csv(__file__, count, float(avg_accuracy), float(avg_loss), time)
 		else:
