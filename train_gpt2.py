@@ -6,6 +6,9 @@ import click
 from data_pipeline import input_fn
 from gpt2_model import *
 
+from scripts.utils import write_csv
+import timeit
+
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 LOG_DIR = _ROOT + "/log"
 MODEL_DIR = _ROOT + "/model"
@@ -44,6 +47,9 @@ def train(num_layers, embedding_size, num_heads, dff, max_seq_len, vocab_size,
 	train_tf_records = tf_records[:train_percent]
 	test_tf_records = tf_records[train_percent:]
 
+	start_time = timeit.default_timer()
+	skipped_time = 0
+
 	train_dataset = input_fn(train_tf_records, batch_size=batch_size)
 	test_dataset = input_fn(test_tf_records, batch_size=batch_size)
 
@@ -70,6 +76,10 @@ def train(num_layers, embedding_size, num_heads, dff, max_seq_len, vocab_size,
 		model.create_summary_writer(LOG_DIR)
 
 	model.fit([train_dataset, test_dataset], graph_mode)
+
+	time = timeit.default_timer() - start_time - skipped_time
+	write_csv(__file__, time=time)
+
 	print("Training Done................")
 
 
