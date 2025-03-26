@@ -5,7 +5,6 @@ import click
 
 from data_pipeline import input_fn
 from gpt2_model import *
-from scripts.utils import write_type
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 LOG_DIR = _ROOT + "/log"
 MODEL_DIR = _ROOT + "/model"
@@ -44,7 +43,10 @@ def train(num_layers, embedding_size, num_heads, dff, max_seq_len, vocab_size,
 	train_tf_records = tf_records[:train_percent]
 	test_tf_records = tf_records[train_percent:]
 
+	print("Train dataset:")
 	train_dataset = input_fn(train_tf_records, batch_size=batch_size)
+
+	print("Test dataset:")
 	test_dataset = input_fn(test_tf_records, batch_size=batch_size)
 
 	if distributed:
@@ -70,9 +72,6 @@ def train(num_layers, embedding_size, num_heads, dff, max_seq_len, vocab_size,
 		model.create_summary_writer(LOG_DIR)
 
 	model.fit([train_dataset, test_dataset], graph_mode)
-	for element in train_dataset:
-		#write_type(__file__,element.dtype())
-		write_type(__file__,[t.shape for t in element if isinstance(t,tf.Tensor)])
 	print("Training Done................")
 
 
