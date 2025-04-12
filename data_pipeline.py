@@ -58,11 +58,8 @@ def input_fn(tf_records,
     dataset = tf.data.TFRecordDataset(tf_records, buffer_size=10000)
     dataset = dataset.shuffle(buffer_size=buffer_size)
 
-    for element in dataset:
-        print("Shape: ", element.shape)
-        print("Type: ", element.dtype)
-
-    dataset = dataset.map(parse_example,num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    dataset = dataset.map(lambda
+            x:tf.py_function(func=parse_example,inp=[x],Tout=(tf.int32,tf.int32)))
     dataset = dataset.padded_batch(batch_size, padded_shapes=padded_shapes)
     dataset = dataset.repeat(epoch)
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)

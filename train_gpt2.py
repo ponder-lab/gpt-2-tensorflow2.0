@@ -5,6 +5,8 @@ import click
 
 from data_pipeline import input_fn
 from gpt2_model import *
+from scripts.utils import write_csv
+import timeit
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 LOG_DIR = _ROOT + "/log"
 MODEL_DIR = _ROOT + "/model"
@@ -76,4 +78,8 @@ def train(num_layers, embedding_size, num_heads, dff, max_seq_len, vocab_size,
 
 
 if __name__ == "__main__":
+	start_time = timeit.default_timer()
+	skipped_time = 0
 	train()
+	time = timeit.default_timer() - skipped_time -start_time
+	write_csv(__file,time=time)
