@@ -2,4 +2,4 @@
 
 PYTHON="python3.10"
 
-$PYTHON pre_process.py
+# $PYTHON pre_process.py
