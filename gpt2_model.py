@@ -8,6 +8,9 @@ from layers.feed_forward import *
 from layers.layer_norm import LayerNormalization
 from utils.tf_utils import *
 
+from scripts.utils import write_csv
+import timeit
+
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 LOG_DIR = _ROOT + "/log"
 
@@ -18,6 +21,8 @@ train_step_signature = [
 
 
 class Gpt2(tf.keras.Model):
+	start_time = timeit.default_timer()
+	skipped_time = 0
 
 	def __init__(self, num_layers,
 	             d_model,
@@ -149,9 +154,13 @@ class Gpt2(tf.keras.Model):
 
 			if load_model:  # If want to load trained weights
 				ckpt.restore(self.ckpt_manager.latest_checkpoint)
+				print_time = timeit.default_timer()
 				print('Latest checkpoint restored...............')
+				Gpt2.skipped_time += timeit.default_timer() - print_time
 			else:
+				print_time = timeit.default_timer()
 				print("Initializing model from scratch..........")
+				Gpt2.skipped_time += timeit.default_timer() - print_time
 
 	def load_model(self, filepath):
 		ckpt = tf.train.Checkpoint(model=self)
@@ -255,11 +264,15 @@ class Gpt2(tf.keras.Model):
 
 	def get_train_test_function(self, graph_mode=False):
 		if graph_mode:
+			print_time = timeit.default_timer()
 			print("Running in graph mode.............")
+			Gpt2.skipped_time += timeit.default_timer() - print_time
 			train_fuc = self.train_step
 			test_fuc = self.test_step
 		else:
+			print_time = timeit.default_timer()
 			print("Running in eager mode.............")
+			Gpt2.skipped_time += timeit.default_timer() - print_time
 			train_fuc = self._train_step
 			test_fuc = self._test_step
 		return train_fuc, test_fuc
@@ -336,8 +349,16 @@ class Gpt2(tf.keras.Model):
 					                 result_type="Test")
 
 					ckpt_save_path = self.ckpt_manager.save()
+					print_time = timeit.default_timer()
 					print('Saving checkpoint for step {} at {}'.format(step.numpy(),
 					                                                   ckpt_save_path))
+					Gpt2.skipped_time += timeit.default_timer() - print_time
+
+			time = timeit.default_timer() - Gpt2.start_time - Gpt2.skipped_time
+			avg_loss = float(total_loss) / float(loss_count)
+			avg_accuracy = float(total_accuracy)/ float(accuracy_count)
+
+			write_csv(__file__, count, float(avg_accuracy), float(avg_loss), time)
 		else:
 			with self.mirrored_strategy.scope():
 				train_dataset, test_dataset = train_dataset
@@ -385,11 +406,13 @@ class Gpt2(tf.keras.Model):
 
 	@staticmethod
 	def log_summary(tf_writer, step, loss, perplexity, result_type="Train"):
+		print_time = timeit.default_timer()
 		print(result_type + ':- Step {}, Loss {:.4f}, Perplexity {:.4f}'.format(
 			step, loss, perplexity))
 		with tf_writer.as_default():
 			tf.summary.scalar("loss", loss, step=step)
 			tf.summary.scalar("perplexity", perplexity, step=step)
+		Gpt2.skipped_time += timeit.default_timer() - print_time
 
 
 class OutputLayer(tf.keras.layers.Layer):
