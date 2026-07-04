@@ -47,10 +47,12 @@ def train_byte_pair_encoding(vocab_size):
 	spm.SentencePieceTrainer.train(spmcmd)
 
 
+@tf.function
 def _int64_feature(value):
 	return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 
+@tf.function
 def serialize_example(inputs, targets):
 	feature = {
 		'inputs': _int64_feature(inputs),
