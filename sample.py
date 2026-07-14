@@ -8,6 +8,7 @@ def argmax(logits):
 	return tf.argmax(logits)
 
 
+@tf.function
 def top_k_logits(logits, k):
 	if k == 0:
 		return logits
