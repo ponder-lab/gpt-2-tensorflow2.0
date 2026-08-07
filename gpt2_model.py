@@ -10,6 +10,7 @@ from utils.tf_utils import *
 
 from scripts.utils import write_csv
 import timeit
+from tensorflow import function
 
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 LOG_DIR = _ROOT + "/log"
@@ -72,6 +73,7 @@ class Gpt2(tf.keras.Model):
 		self.train_step_signature = [
 			tf.TensorSpec(shape=(None, None), dtype=tf.int32)]
 
+	@function
 	def call(self, x, training=True, past=None):
 		x = tf.cast(x, tf.int32)
 		# self.batch_size, self.sequence = tf.shape(x)[0], tf.shape(x)[1]
@@ -103,6 +105,7 @@ class Gpt2(tf.keras.Model):
 		return logits, presents
 
 	@staticmethod
+	@function
 	def get_padded_accuracy(labels, logits):
 		with tf.name_scope("padded_accuracy"):
 			weights = tf.cast(tf.not_equal(labels, 0), tf.float32)
@@ -130,6 +133,7 @@ class Gpt2(tf.keras.Model):
 				self.optimizer = tf.keras.optimizers.SGD(self.learning_rate)
 			return self.optimizer
 
+	@function
 	def get_loss(self, real, pred):
 		with tf.name_scope("loss_layer"):
 			mask = tf.math.logical_not(tf.math.equal(real, 0))
@@ -143,6 +147,7 @@ class Gpt2(tf.keras.Model):
 			return sequence_avg_loss
 
 	@staticmethod
+	@function
 	def get_perplexity(cross_entropy):
 		perplexity = tf.exp(cross_entropy)
 		return perplexity
@@ -178,6 +183,7 @@ class Gpt2(tf.keras.Model):
 
 			return self.train_writer, self.test_writer
 
+	@function
 	def _train_step(self, inputs, targets):
 		with tf.GradientTape() as tape:
 			predictions, _ = self(inputs, training=True)
@@ -196,6 +202,7 @@ class Gpt2(tf.keras.Model):
 
 		return step, loss, perplexity, accuracy
 
+	@function
 	def _test_step(self, inputs, targets):
 		pred, _ = self(inputs, training=False)
 		loss = self.get_loss(targets, pred)
@@ -210,6 +217,7 @@ class Gpt2(tf.keras.Model):
 	def test_step(self, inputs, targets):
 		return self._test_step(inputs, targets)
 
+	@function
 	def _distributed_train_step(self, inputs, targets):
 
 		def step_fn(inp, tar):
@@ -238,6 +246,7 @@ class Gpt2(tf.keras.Model):
 
 		return step, mean_loss, perplexity
 
+	@function
 	def _distributed_test_step(self, inputs, targets):
 		def step_fn(inp, tar):
 			logits, _ = self(inp, training=False)
@@ -433,6 +442,7 @@ class OutputLayer(tf.keras.layers.Layer):
 				trainable=True)
 		super(OutputLayer, self).build(input_shape)
 
+	@function
 	def call(self, x):
 		batch, sequence, d_model = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[-1]
 		h_flat = tf.reshape(x, [-1, d_model])
@@ -459,6 +469,7 @@ class DecoderLayer(tf.keras.layers.Layer):
 		self.layer_norm1 = LayerNormalization(self.d_model)
 		self.layer_norm2 = LayerNormalization(self.d_model)
 
+	@function
 	def call(self, x, training, mask, past=None):
 		out, present = self.mha(self.layer_norm1(x), mask=mask, past_layer=past,
 		                        training=training)  # (batch_size, input_seq_len, d_model)
