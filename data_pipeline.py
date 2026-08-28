@@ -32,6 +32,7 @@ def convert_ids_to_tokens(inv_vocab, ids):
     return convert_by_vocab(inv_vocab, ids)
 
 
+@tf.function
 def parse_example(serialized_example):
     data_fields = {
         "inputs": tf.io.VarLenFeature(tf.int64),
@@ -47,6 +48,7 @@ def parse_example(serialized_example):
     return inputs, targets
 
 
+@tf.function
 def input_fn(tf_records,
              batch_size=32,
              padded_shapes=([-1], [-1]),
