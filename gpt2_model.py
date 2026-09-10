@@ -105,7 +105,7 @@ class Gpt2(tf.keras.Model):
 		return logits, presents
 
 	@staticmethod
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None, None), dtype=float32)])
+	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None, 24512), dtype=float32)])
 	def get_padded_accuracy(labels, logits):
 		with tf.name_scope("padded_accuracy"):
 			weights = tf.cast(tf.not_equal(labels, 0), tf.float32)
@@ -133,7 +133,7 @@ class Gpt2(tf.keras.Model):
 				self.optimizer = tf.keras.optimizers.SGD(self.learning_rate)
 			return self.optimizer
 
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None, None), dtype=float32)])
+	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None, 24512), dtype=float32)])
 	def get_loss(self, real, pred):
 		with tf.name_scope("loss_layer"):
 			mask = tf.math.logical_not(tf.math.equal(real, 0))
