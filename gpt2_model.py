@@ -442,7 +442,6 @@ class OutputLayer(tf.keras.layers.Layer):
 				trainable=True)
 		super(OutputLayer, self).build(input_shape)
 
-	@function
 	def call(self, x):
 		batch, sequence, d_model = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[-1]
 		h_flat = tf.reshape(x, [-1, d_model])
