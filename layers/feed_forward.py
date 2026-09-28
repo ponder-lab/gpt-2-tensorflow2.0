@@ -1,5 +1,5 @@
 from utils.tf_utils import *
-from tensorflow import function
+from tensorflow import function, TensorSpec, float32
 
 
 class Conv1d(tf.keras.layers.Layer):
@@ -30,7 +30,7 @@ class Conv1d(tf.keras.layers.Layer):
                                     initializer=tf.constant_initializer(self.bias_init))
         super(Conv1d, self).build(input_shape)
 
-    @function
+    @function(input_signature=[TensorSpec(shape=None, dtype=float32)])
     def call(self, inputs):
         output_shape = [tf.shape(inputs)[0], tf.shape(inputs)[1]] + [self.filter_size]
         inputs = tf.reshape(inputs, [-1, self.hidden_size])  # shape [batch, seq , features] => [batch*seq, features]

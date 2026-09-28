@@ -47,7 +47,7 @@ class EmbeddingLayer(tf.keras.layers.Layer):
 
             return embeddings
 
-    @tf.function
+    @tf.function(input_signature=[tf.TensorSpec(shape=(None, None, None), dtype=tf.float32)])
     def projection(self, inputs):
         with tf.name_scope("output_layer"):
             batch_size = tf.shape(inputs)[0]

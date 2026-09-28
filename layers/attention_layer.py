@@ -36,13 +36,13 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
         return output, attention_weights
 
-    @tf.function
+    @tf.function(input_signature=[tf.TensorSpec(shape=None, dtype=tf.float32)])
     def split_heads(self, x):
         batch_size = tf.shape(x)[0]
         x = tf.reshape(x, (batch_size, -1, self.num_heads, self.depth))
         return tf.transpose(x, perm=[0, 2, 1, 3])
 
-    @tf.function
+    @tf.function(input_signature=[tf.TensorSpec(shape=(None, None, None, None), dtype=tf.float32)])
     def merge_heads(self, x):
         batch_size = tf.shape(x)[0]
         x = tf.transpose(x, perm=[0, 2, 1, 3])

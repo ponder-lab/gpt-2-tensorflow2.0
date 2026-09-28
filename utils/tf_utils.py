@@ -23,6 +23,7 @@ def get_padding_mask(seq):
         return seq[:, tf.newaxis, tf.newaxis, :]  # (batch_size, 1, 1, seq_len)
 
 
+@tf.function(input_signature=[tf.TensorSpec(shape=(), dtype=tf.int32)])
 def attention_mask(size):
     """
     if size is 4 then it returns below matrix

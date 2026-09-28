@@ -147,7 +147,7 @@ class Gpt2(tf.keras.Model):
 			return sequence_avg_loss
 
 	@staticmethod
-	@function
+	@function(input_signature=[TensorSpec(shape=None, dtype=float32)])
 	def get_perplexity(cross_entropy):
 		perplexity = tf.exp(cross_entropy)
 		return perplexity
@@ -442,7 +442,6 @@ class OutputLayer(tf.keras.layers.Layer):
 				trainable=True)
 		super(OutputLayer, self).build(input_shape)
 
-	@function(input_signature=[TensorSpec(shape=(None, None, None), dtype=float32)])
 	def call(self, x):
 		batch, sequence, d_model = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[-1]
 		h_flat = tf.reshape(x, [-1, d_model])
