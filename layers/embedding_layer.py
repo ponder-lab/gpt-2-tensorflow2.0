@@ -33,6 +33,7 @@ class EmbeddingLayer(tf.keras.layers.Layer):
         else:
             raise ValueError("mode {} is not valid.".format(mode))
 
+    @tf.function
     def embedding(self, inputs, scale=False):
         with tf.name_scope("embedding"):
             # Create binary mask of size [batch_size, length]
@@ -46,6 +47,7 @@ class EmbeddingLayer(tf.keras.layers.Layer):
 
             return embeddings
 
+    @tf.function
     def projection(self, inputs):
         with tf.name_scope("output_layer"):
             batch_size = tf.shape(inputs)[0]
