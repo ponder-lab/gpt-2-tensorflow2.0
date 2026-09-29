@@ -18,6 +18,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         self.c_attn = Conv1d(self.d_model, self.d_model * 3)
         self.c_proj = Conv1d(self.d_model, self.d_model)
 
+    @tf.function
     def multihead_attention(self, q, k, v, training, mask=None):
         matmul_qk = tf.matmul(q, k, transpose_b=True)  # (..., seq_len_q, seq_len_k)
         if self.scale:
@@ -35,11 +36,13 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
         return output, attention_weights
 
+    @tf.function
     def split_heads(self, x):
         batch_size = tf.shape(x)[0]
         x = tf.reshape(x, (batch_size, -1, self.num_heads, self.depth))
         return tf.transpose(x, perm=[0, 2, 1, 3])
 
+    @tf.function
     def merge_heads(self, x):
         batch_size = tf.shape(x)[0]
         x = tf.transpose(x, perm=[0, 2, 1, 3])
@@ -49,6 +52,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         # (batch_size, seq_len_q, d_model)
         return merged
 
+    @tf.function
     def call(self, x, mask=None, past_layer=None, training=True):
         x = self.c_attn(x)
         query, key, value = tf.split(x, 3, axis=2)
