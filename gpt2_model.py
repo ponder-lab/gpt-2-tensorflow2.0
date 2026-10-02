@@ -155,10 +155,14 @@ class Gpt2(tf.keras.Model):
 	def create_checkpoint_manager(self, checkpoint_path, max_to_keep=5, load_model=True):
 		with tf.name_scope('checkpoint_manager'):
 			ckpt = tf.train.Checkpoint(optimizer=self.optimizer, model=self)
+			io_time = timeit.default_timer()
 			self.ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=max_to_keep)
+			Gpt2.skipped_time += timeit.default_timer() - io_time
 
 			if load_model:  # If want to load trained weights
+				io_time = timeit.default_timer()
 				ckpt.restore(self.ckpt_manager.latest_checkpoint)
+				Gpt2.skipped_time += timeit.default_timer() - io_time
 				print_time = timeit.default_timer()
 				print('Latest checkpoint restored...............')
 				Gpt2.skipped_time += timeit.default_timer() - print_time
@@ -178,8 +182,10 @@ class Gpt2(tf.keras.Model):
 		test_summary_path = summary_path + "/test"
 
 		with tf.name_scope('summary'):
+			io_time = timeit.default_timer()
 			self.train_writer = tf.summary.create_file_writer(train_summary_path)
 			self.test_writer = tf.summary.create_file_writer(test_summary_path)
+			Gpt2.skipped_time += timeit.default_timer() - io_time
 
 			return self.train_writer, self.test_writer
 
