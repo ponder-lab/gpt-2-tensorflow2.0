@@ -13,7 +13,7 @@ def gelu(x):
         return x * cdf
 
 
-@tf.function(input_signature=[tf.TensorSpec(shape=(None, None), dtype=tf.int32)])
+@tf.function(reduce_retracing=True)
 def get_padding_mask(seq):
     with tf.name_scope("Padding_Mask"):
         seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
@@ -23,7 +23,7 @@ def get_padding_mask(seq):
         return seq[:, tf.newaxis, tf.newaxis, :]  # (batch_size, 1, 1, seq_len)
 
 
-@tf.function(input_signature=[tf.TensorSpec(shape=(), dtype=tf.int32)])
+@tf.function(reduce_retracing=True)
 def attention_mask(size):
     """
     if size is 4 then it returns below matrix
@@ -38,7 +38,7 @@ def attention_mask(size):
         return mask  # (seq_len, seq_len)
 
 
-@tf.function(input_signature=[tf.TensorSpec(shape=(None, None), dtype=tf.int32)])
+@tf.function(reduce_retracing=True)
 def create_masks(inp):
     with tf.name_scope("att_masking"):
         att_mask = attention_mask(tf.shape(inp)[1])

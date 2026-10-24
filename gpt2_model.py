@@ -105,7 +105,7 @@ class Gpt2(tf.keras.Model):
 		return logits, presents
 
 	@staticmethod
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None, 24512), dtype=float32)])
+	@function(reduce_retracing=True)
 	def get_padded_accuracy(labels, logits):
 		with tf.name_scope("padded_accuracy"):
 			weights = tf.cast(tf.not_equal(labels, 0), tf.float32)
@@ -133,7 +133,7 @@ class Gpt2(tf.keras.Model):
 				self.optimizer = tf.keras.optimizers.SGD(self.learning_rate)
 			return self.optimizer
 
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None, 24512), dtype=float32)])
+	@function(reduce_retracing=True)
 	def get_loss(self, real, pred):
 		with tf.name_scope("loss_layer"):
 			mask = tf.math.logical_not(tf.math.equal(real, 0))
@@ -147,7 +147,7 @@ class Gpt2(tf.keras.Model):
 			return sequence_avg_loss
 
 	@staticmethod
-	@function(input_signature=[TensorSpec(shape=None, dtype=float32)])
+	@function(reduce_retracing=True)
 	def get_perplexity(cross_entropy):
 		perplexity = tf.exp(cross_entropy)
 		return perplexity
@@ -207,7 +207,7 @@ class Gpt2(tf.keras.Model):
 
 		return step, loss, perplexity, accuracy
 
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
+	@function(reduce_retracing=True)
 	def _test_step(self, inputs, targets):
 		pred, _ = self(inputs, training=False)
 		loss = self.get_loss(targets, pred)
@@ -250,7 +250,7 @@ class Gpt2(tf.keras.Model):
 
 		return step, mean_loss, perplexity
 
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
+	@function(reduce_retracing=True)
 	def _distributed_test_step(self, inputs, targets):
 		def step_fn(inp, tar):
 			logits, _ = self(inp, training=False)
@@ -267,11 +267,11 @@ class Gpt2(tf.keras.Model):
 
 		return mean_loss, perplexity
 
-	@tf.function(experimental_relax_shapes=True, input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
+	@tf.function(experimental_relax_shapes=True, reduce_retracing=True)
 	def distributed_train_step(self, inputs, targets):
 		return self._distributed_train_step(inputs, targets)
 
-	@tf.function(experimental_relax_shapes=True, input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
+	@tf.function(experimental_relax_shapes=True, reduce_retracing=True)
 	def distributed_test_step(self, inputs, targets):
 		return self._distributed_test_step(inputs, targets)
 

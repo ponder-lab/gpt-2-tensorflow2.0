@@ -32,7 +32,7 @@ def convert_ids_to_tokens(inv_vocab, ids):
     return convert_by_vocab(inv_vocab, ids)
 
 
-@tf.function(input_signature=[tf.TensorSpec(shape=(), dtype=tf.string)])
+@tf.function(reduce_retracing=True)
 def parse_example(serialized_example):
     data_fields = {
         "inputs": tf.io.VarLenFeature(tf.int64),
