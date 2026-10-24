@@ -189,7 +189,6 @@ class Gpt2(tf.keras.Model):
 
 			return self.train_writer, self.test_writer
 
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
 	def _train_step(self, inputs, targets):
 		with tf.GradientTape() as tape:
 			predictions, _ = self(inputs, training=True)
@@ -223,7 +222,6 @@ class Gpt2(tf.keras.Model):
 	def test_step(self, inputs, targets):
 		return self._test_step(inputs, targets)
 
-	@function(input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
 	def _distributed_train_step(self, inputs, targets):
 
 		def step_fn(inp, tar):
@@ -269,11 +267,11 @@ class Gpt2(tf.keras.Model):
 
 		return mean_loss, perplexity
 
-	@tf.function(experimental_relax_shapes=True)
+	@tf.function(experimental_relax_shapes=True, input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
 	def distributed_train_step(self, inputs, targets):
 		return self._distributed_train_step(inputs, targets)
 
-	@tf.function(experimental_relax_shapes=True)
+	@tf.function(experimental_relax_shapes=True, input_signature=[TensorSpec(shape=(None, None), dtype=int32), TensorSpec(shape=(None, None), dtype=int32)])
 	def distributed_test_step(self, inputs, targets):
 		return self._distributed_test_step(inputs, targets)
 
