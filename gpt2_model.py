@@ -189,7 +189,6 @@ class Gpt2(tf.keras.Model):
 
 			return self.train_writer, self.test_writer
 
-	@function
 	def _train_step(self, inputs, targets):
 		with tf.GradientTape() as tape:
 			predictions, _ = self(inputs, training=True)
@@ -223,7 +222,6 @@ class Gpt2(tf.keras.Model):
 	def test_step(self, inputs, targets):
 		return self._test_step(inputs, targets)
 
-	@function
 	def _distributed_train_step(self, inputs, targets):
 
 		def step_fn(inp, tar):
